@@ -1,15 +1,16 @@
 package errors
 
 import (
+	stderrors "errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_UnknownTypeDefaults(t *testing.T) {
+func Test_UnknownType(t *testing.T) {
 	require.Equal(t, "Unknown", TypeUnknown.String())
-	require.Equal(t, GroupServer, TypeUnknown.Group)
 }
 
 func TestGetType(t *testing.T) {
@@ -18,43 +19,43 @@ func TestGetType(t *testing.T) {
 		err  error
 		want Type
 	}{
-		// {
-		// 	name: "nil",
-		// 	err:  nil,
-		// 	want: TypeUnknown,
-		// },
-		// {
-		// 	name: "no type",
-		// 	err:  New("err"),
-		// 	want: TypeUnknown,
-		// },
-		// {
-		// 	name: "with type",
-		// 	err:  New("err").WithType(TypeInvalidRequest),
-		// 	want: TypeInvalidRequest,
-		// },
-		// {
-		// 	name: "from fmt.Errorf wrap with type",
-		// 	err:  fmt.Errorf("wrap: %w", FromErr(stderrors.New("err")).WithType(TypeInvalidRequest)),
-		// 	want: TypeInvalidRequest,
-		// },
-		// {
-		// 	name: "from internal err with type",
-		// 	err:  FromErr(New("err")).WithType(TypeInvalidRequest),
-		// 	want: TypeInvalidRequest,
-		// },
+		{
+			name: "nil",
+			err:  nil,
+			want: TypeUnknown,
+		},
+		{
+			name: "no type",
+			err:  New("err"),
+			want: TypeUnknown,
+		},
+		{
+			name: "with type",
+			err:  New("err").WithType(TypeInvalidRequest),
+			want: TypeInvalidRequest,
+		},
+		{
+			name: "from fmt.Errorf wrap with type",
+			err:  fmt.Errorf("wrap: %w", FromErr(stderrors.New("err")).WithType(TypeInvalidRequest)),
+			want: TypeInvalidRequest,
+		},
+		{
+			name: "from internal err with type",
+			err:  FromErr(New("err")).WithType(TypeInvalidRequest),
+			want: TypeInvalidRequest,
+		},
 		{
 			name: "from internal err with type v2",
 			err:  FromErr(New("err").WithType(TypeInvalidRequest)),
 			want: TypeInvalidRequest,
 		},
-		// {
-		// 	name: "multiple types, want most recent one",
-		// 	err: FromErr(
-		// 		New("err").WithType(TypeInvalidRequest),
-		// 	).WithType(TypeAlreadyExists),
-		// 	want: TypeAlreadyExists,
-		// },
+		{
+			name: "multiple types, want most recent one",
+			err: FromErr(
+				New("err").WithType(TypeInvalidRequest),
+			).WithType(TypeAlreadyExists),
+			want: TypeAlreadyExists,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -63,11 +64,6 @@ func TestGetType(t *testing.T) {
 			t.Log(tp.String())
 			assert.Equal(t, tt.want, tp)
 			assert.True(t, IsType(tt.err, tp))
-			assert.True(t, IsGroup(tt.err, tp.Group))
-
-			grp := GetGroup(tt.err)
-			t.Log(grp.String())
-			assert.Equal(t, tt.want.Group, grp)
 		})
 	}
 }

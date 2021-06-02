@@ -31,11 +31,6 @@ func Newf(format string, args ...interface{}) Error {
 // This allows taking standard error and adding some details to it.
 //
 // If passed error is nil, returns nil.
-//
-// Example usage:
-//
-//   return errors.FromErr(err).WithType(errors.TypeNotFound).WithLabel("someid", "123")
-//
 func FromErr(err error) Error {
 	if err == nil {
 		return nil
