@@ -1,4 +1,4 @@
-# Errors
+# Errors [![Go Report Card](https://goreportcard.com/badge/github.com/nglogic/errors)](https://goreportcard.com/report/github.com/nglogic/errors) [![GoDoc](https://godoc.org/github.com/nglogic/errors?status.svg)](http://godoc.org/github.com/nglogic/errors) [![Coverage](https://img.shields.io/badge/coverage-gocover.io-blue)](https://gocover.io/github.com/nglogic/errors)
 
 `errors` is a go package that defines the error type, which carries type information and some extra values for usage across API boundaries.
 
