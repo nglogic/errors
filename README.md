@@ -58,7 +58,7 @@ The purpose of this mechanism is to pass valuable information that can enhance e
 - Extra data to log,
 - In case of invalid input - extra error details that your app could return to the user to specify which input parameters were invalid,
 
-The best way to handle error values in your code is to create a pair of functions in your code. The first one is to add the value, and the second one to fetch it. You have to have a key for that value. Ideally, it would be best to use a custom type for the key to avoid potential collisions. The pattern is very similar to what you would do to handle values in context.
+The best way to handle error values in your code is to create a pair of functions in your code. The first one is to add the value, and the second one to fetch it. You have to have a key for that value. Ideally, it would be best to use a custom type for the key to avoid potential collisions.
 
 ```go
 type myErrValueKey struct{}
@@ -75,7 +75,7 @@ func GetMyErrValue(err error) string {
 }
 ```
 
-Now just use the functions to write/read values where you need them :)
+Now just use the functions to write/read values where you need them :) The pattern is very similar to what you would do to handle values in context.
 
 ## Multi-error
 
