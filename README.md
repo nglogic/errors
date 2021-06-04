@@ -14,12 +14,12 @@ But what if you want to pass information the other way in case of a failure? Loo
 
 ![diagram](docs/errors.svg)
 
-The usual solution is to have a few sentinel errors and choose the action by comparing the errors to predefined sentinels by `errors.Is`. It works but isn't very flexible. For example:
+The usual solution is to have a few sentinel errors and choose the action by comparing the errors to predefined sentinels by `errors.Is`. It works but isn't very flexible. Some example cases when it'll get tricky:
 
-- You want to have a dynamic error message. Sentinel errors don't allow it.
-- You want to return a clean message to the user and log all the error details internally.
+- You want to have a dynamic error messages. Sentinel errors don't allow it.
+- You want to return a clean messages to the user and log all the error details internally.
 
-This package gives you the tools to do these things.
+This package gives you the tools to do these things easily.
 
 ## Types
 
@@ -42,7 +42,7 @@ if errors.IsType(errors.TypeNotFound) { // returns true!
 
 ### Creating custom type
 
-There is a predefined list of the types that should be enough for the majority of use cases. 
+There is a predefined list of the types that should be enough for the majority of use cases.
 However, if you need a different one, adding it is as simple as defining a const:
 
 ```go
@@ -58,7 +58,7 @@ The purpose of this mechanism is to pass valuable information that can enhance e
 - Extra data to log,
 - In case of invalid input - extra error details that your app could return to the user to specify which input parameters were invalid,
 
-The best way to handle error values in your code is to create a pair of functions in your code. The first one is to add the value, and the second one to fetch it. You have to have a key for that value. Ideally, it would be best to use a custom type for the key to avoid potential collisions. This is very similar to what you would do to handle values in context.
+The best way to handle error values in your code is to create a pair of functions in your code. The first one is to add the value, and the second one to fetch it. You have to have a key for that value. Ideally, it would be best to use a custom type for the key to avoid potential collisions. The pattern is very similar to what you would do to handle values in context.
 
 ```go
 type myErrValueKey struct{}
@@ -75,11 +75,11 @@ func GetMyErrValue(err error) string {
 }
 ```
 
-Then just use the functions to write/read values where you need them :)
+Now just use the functions to write/read values where you need them :)
 
 ## Multi-error
 
-Sometimes you want to perform multiple tasks, each of them can fail. You want to return the error with the description of all failures. The most common case is validation: the user should know all the problems with the input, not just the first one. `errors.Append` comes for the rescue! See the docs for the example usage.
+Sometimes you want to perform multiple tasks, each of them can fail. You want to return the error with the description of all failures. The one common case is validation: the user should know all the problems with the input, not just the first one. `errors.Append` comes to the rescue! See the docs for the example usage.
 
 The idea for the implementation comes from [hashicorp/go-multierror](https://github.com/hashicorp/go-multierror). Kudos to them for this great package!
 
@@ -92,4 +92,4 @@ err := errors.New("testing error")
 err = fmt.Errorf("something bad: %w", err)
 ```
 
-You can still use standard errors `Is` and `As` methods to inspect error values.
+You can still use standard errors `Is` and `As` methods to inspect error values. Unwrapping works too!
