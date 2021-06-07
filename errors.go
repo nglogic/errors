@@ -41,10 +41,9 @@ func Value(err error, key interface{}) interface{} {
 	return nil
 }
 
-// WithFinalContext is a helper function that works nicely with defer.
+// Finalize is a helper function that works nicely with defer and named returns.
 // It adds context to the error if it's not nil.
-// It is designed to work with named errors.
-func WithFinalContext(ep *error, format string, a ...interface{}) {
+func Finalize(ep *error, format string, a ...interface{}) {
 	if *ep == nil {
 		return
 	}

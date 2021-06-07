@@ -27,11 +27,11 @@ func Newf(format string, args ...interface{}) Error {
 	}
 }
 
-// FromErr takes existing error and creates internal error.
+// From takes existing error and creates internal error.
 // This allows taking standard error and adding some details to it.
 //
 // If passed error is nil, returns nil.
-func FromErr(err error) Error {
+func From(err error) Error {
 	if err == nil {
 		return nil
 	}

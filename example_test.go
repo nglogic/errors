@@ -8,9 +8,9 @@ import (
 	"github.com/nglogic/errors"
 )
 
-// This example demonstrates the usage of FromErr function.
-func ExampleFromErr() {
-	err := errors.FromErr(os.ErrNotExist).WithType(errors.TypeNotFound)
+// This example demonstrates the usage of From function.
+func ExampleFrom() {
+	err := errors.From(os.ErrNotExist).WithType(errors.TypeNotFound)
 
 	fmt.Println(err)
 	// Output: file does not exist
@@ -56,7 +56,7 @@ func ExampleAppend() {
 		err = errors.Append(err, errors.New("check 3 failed"))
 	}
 	if err != nil {
-		err = errors.FromErr(err).WithType(errors.TypeInvalidRequest)
+		err = errors.From(err).WithType(errors.TypeInvalidRequest)
 	}
 
 	fmt.Printf(
@@ -68,10 +68,10 @@ func ExampleAppend() {
 }
 
 // This example demonstrates how to simplify error handling in
-// a function using WithFinalContext.
-func ExampleWithFinalContext() {
+// a function using Finalize.
+func ExampleFinalize() {
 	foo := func(a, b int) (rerr error) {
-		defer errors.WithFinalContext(&rerr, "task failed (a=%d, b=%d)", a, b)
+		defer errors.Finalize(&rerr, "task failed (a=%d, b=%d)", a, b)
 
 		if err := doWork(a + b); err != nil {
 			return err
@@ -80,10 +80,10 @@ func ExampleWithFinalContext() {
 	}
 
 	err := foo(1, 2)
-	fmt.Println(err)
+	fmt.Printf("%v\n", err)
 
 	err = foo(-1, 1)
-	fmt.Println(err)
+	fmt.Printf("%v\n", err)
 
 	// Output:
 	// <nil>

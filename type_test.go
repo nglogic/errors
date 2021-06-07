@@ -36,22 +36,22 @@ func TestGetType(t *testing.T) {
 		},
 		{
 			name: "from fmt.Errorf wrap with type",
-			err:  fmt.Errorf("wrap: %w", FromErr(stderrors.New("err")).WithType(TypeInvalidRequest)),
+			err:  fmt.Errorf("wrap: %w", From(stderrors.New("err")).WithType(TypeInvalidRequest)),
 			want: TypeInvalidRequest,
 		},
 		{
 			name: "from internal err with type",
-			err:  FromErr(New("err")).WithType(TypeInvalidRequest),
+			err:  From(New("err")).WithType(TypeInvalidRequest),
 			want: TypeInvalidRequest,
 		},
 		{
 			name: "from internal err with type v2",
-			err:  FromErr(New("err").WithType(TypeInvalidRequest)),
+			err:  From(New("err").WithType(TypeInvalidRequest)),
 			want: TypeInvalidRequest,
 		},
 		{
 			name: "multiple types, want most recent one",
-			err: FromErr(
+			err: From(
 				New("err").WithType(TypeInvalidRequest),
 			).WithType(TypeAlreadyExists),
 			want: TypeAlreadyExists,

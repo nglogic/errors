@@ -20,9 +20,9 @@ func TestError(t *testing.T) {
 		wantType    errors.Type
 	}{
 		{
-			name: "FromErr with nil",
+			name: "From with nil",
 			makeErr: func() error {
-				return errors.FromErr(nil)
+				return errors.From(nil)
 			},
 			wantErr: false,
 		},
@@ -57,7 +57,7 @@ func TestError(t *testing.T) {
 			name: "wapped with type",
 			makeErr: func() error {
 				err := fmt.Errorf("stderror")
-				return errors.FromErr(err).WithType(errors.TypeNotFound)
+				return errors.From(err).WithType(errors.TypeNotFound)
 			},
 			wantErr:     true,
 			wantMessage: "stderror",
@@ -67,11 +67,11 @@ func TestError(t *testing.T) {
 			name: "multiple levels of wrapping with type and labels, mixed std errors with custom errors",
 			makeErr: func() error {
 				err := fmt.Errorf("stderror")
-				err = errors.FromErr(fmt.Errorf("wrap1: %w", err))
+				err = errors.From(fmt.Errorf("wrap1: %w", err))
 				err = fmt.Errorf("wrap%d: %w", 2, err)
-				err = errors.FromErr(err)
-				err = errors.FromErr(err).WithType(errors.TypeNotFound)
-				err = errors.FromErr(err).WithType(errors.TypeInvalidRequest) // This type should take precedence!
+				err = errors.From(err)
+				err = errors.From(err).WithType(errors.TypeNotFound)
+				err = errors.From(err).WithType(errors.TypeInvalidRequest) // This type should take precedence!
 				err = fmt.Errorf("wrap3: %w", err)
 				return err
 			},
@@ -230,7 +230,7 @@ func TestErrorValue(t *testing.T) {
 		{
 			name: "nested with value",
 			makeErr: func() error {
-				return errors.FromErr(
+				return errors.From(
 					fmt.Errorf(
 						"test: %w",
 						errors.New("test").WithValue(valueKey{}, value),
@@ -242,7 +242,7 @@ func TestErrorValue(t *testing.T) {
 		{
 			name: "nested with append, with value",
 			makeErr: func() error {
-				return errors.FromErr(
+				return errors.From(
 					fmt.Errorf(
 						"test: %w",
 						errors.Append(
@@ -266,7 +266,7 @@ func TestErrorValue(t *testing.T) {
 		{
 			name: "nested with append, with value 2",
 			makeErr: func() error {
-				return errors.FromErr(
+				return errors.From(
 					fmt.Errorf(
 						"test: %w",
 						errors.Append(
@@ -290,7 +290,7 @@ func TestErrorValue(t *testing.T) {
 		{
 			name: "nested with append, with value 3",
 			makeErr: func() error {
-				return errors.FromErr(
+				return errors.From(
 					fmt.Errorf(
 						"test: %w",
 						errors.Append(
@@ -339,14 +339,14 @@ func TestErrorValue(t *testing.T) {
 func TestWithFinalContext(t *testing.T) {
 	t.Run("error is nil", func(t *testing.T) {
 		err := func() (rerr error) {
-			defer errors.WithFinalContext(&rerr, "failed to stf")
+			defer errors.Finalize(&rerr, "failed to stf")
 			return nil
 		}()
 		assert.True(t, err == nil)
 	})
 	t.Run("error is wrapped with context", func(t *testing.T) {
 		err := func() (rerr error) {
-			defer errors.WithFinalContext(&rerr, "foo failed with a=%d", 123)
+			defer errors.Finalize(&rerr, "foo failed with a=%d", 123)
 			return io.ErrClosedPipe
 		}()
 		assert.Error(t, err)
@@ -358,7 +358,7 @@ func TestWithFinalContext(t *testing.T) {
 	})
 	t.Run("wrapped error preserves type", func(t *testing.T) {
 		err := func() (rerr error) {
-			defer errors.WithFinalContext(&rerr, "func failed")
+			defer errors.Finalize(&rerr, "func failed")
 			return errors.New("not found").WithType(errors.TypeNotFound)
 		}()
 		assert.Error(t, err)
@@ -373,23 +373,23 @@ func TestIs(t *testing.T) {
 		want    error
 	}{
 		{
-			name: "fromErr",
+			name: "from",
 			makeErr: func() error {
-				return errors.FromErr(os.ErrNotExist)
+				return errors.From(os.ErrNotExist)
 			},
 			want: os.ErrNotExist,
 		},
 		{
-			name: "fromErr with context",
+			name: "from with context",
 			makeErr: func() error {
-				return fmt.Errorf("test: %w", errors.FromErr(os.ErrNotExist))
+				return fmt.Errorf("test: %w", errors.From(os.ErrNotExist))
 			},
 			want: os.ErrNotExist,
 		},
 		{
-			name: "fromErr with context 2",
+			name: "from with context 2",
 			makeErr: func() error {
-				return errors.FromErr(fmt.Errorf("test: %w", errors.FromErr(os.ErrNotExist)))
+				return errors.From(fmt.Errorf("test: %w", errors.From(os.ErrNotExist)))
 			},
 			want: os.ErrNotExist,
 		},
@@ -423,21 +423,21 @@ func TestAs(t *testing.T) {
 		makeErr func() error
 	}{
 		{
-			name: "fromErr",
+			name: "from",
 			makeErr: func() error {
-				return errors.FromErr(&testError{Value: "test"})
+				return errors.From(&testError{Value: "test"})
 			},
 		},
 		{
-			name: "fromErr with context",
+			name: "from with context",
 			makeErr: func() error {
-				return fmt.Errorf("test: %w", errors.FromErr(&testError{Value: "test"}))
+				return fmt.Errorf("test: %w", errors.From(&testError{Value: "test"}))
 			},
 		},
 		{
-			name: "fromErr with context 2",
+			name: "from with context 2",
 			makeErr: func() error {
-				return errors.FromErr(fmt.Errorf("test: %w", errors.FromErr(&testError{Value: "test"})))
+				return errors.From(fmt.Errorf("test: %w", errors.From(&testError{Value: "test"})))
 			},
 		},
 		{
