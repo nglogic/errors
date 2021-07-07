@@ -54,7 +54,7 @@ func TestError(t *testing.T) {
 			wantType:    errors.TypeNotFound,
 		},
 		{
-			name: "wapped with type",
+			name: "wrapped with type",
 			makeErr: func() error {
 				err := fmt.Errorf("stderror")
 				return errors.From(err).WithType(errors.TypeNotFound)
@@ -79,103 +79,6 @@ func TestError(t *testing.T) {
 			wantMessage: "wrap3: wrap2: wrap1: stderror",
 			wantType:    errors.TypeInvalidRequest,
 		},
-		{
-			name: "append with nils",
-			makeErr: func() error {
-				return errors.Append(nil, nil)
-			},
-			wantErr: false,
-		},
-		{
-			name: "append with nils 2",
-			makeErr: func() error {
-				return errors.Append(errors.Append(nil, nil, nil), nil, errors.Append(nil, nil))
-			},
-			wantErr: false,
-		},
-		{
-			name:        "append returns not nil if at least one err was added",
-			makeErr:     func() error { return errors.Append(nil, errors.New("test")) },
-			wantErr:     true,
-			wantMessage: "test",
-			wantType:    errors.TypeUnknown,
-		},
-		{
-			name: "only non nil errors are appended",
-			makeErr: func() error {
-				return errors.Append(
-					errors.New("test"),
-					nil,
-					errors.New("test2"),
-					nil,
-					errors.New("test3"),
-				)
-			},
-			wantErr:     true,
-			wantMessage: "test; test2; test3",
-			wantType:    errors.TypeUnknown,
-		},
-		{
-			name: "err type is preserved by append",
-			makeErr: func() error {
-				return errors.Append(
-					errors.New("").WithType(errors.TypeInvalidRequest),
-					fmt.Errorf(""),
-					errors.New("").WithType(errors.TypeAlreadyExists), // The last one that should be chosen.
-				)
-			},
-			wantErr:     true,
-			wantMessage: "",
-			wantType:    errors.TypeAlreadyExists,
-		},
-		{
-			name: "err type is preserved by append - multilevel",
-			makeErr: func() error {
-				return errors.Append(
-					errors.New("").WithType(errors.TypeInvalidRequest),
-					fmt.Errorf(""),
-					errors.New("").WithType(errors.TypeAlreadyExists),
-					errors.Append( // The last one that should be chosen. But...
-						errors.New(""),
-						errors.New("").WithType(errors.TypePermissionDenied), // ...parent inherits the type from here.
-						errors.New(""),
-					),
-				)
-			},
-			wantErr:     true,
-			wantMessage: "",
-			wantType:    errors.TypePermissionDenied,
-		},
-		{
-			name: "type set on the result of append has precedence",
-			makeErr: func() error {
-				return errors.Append(
-					errors.New("").WithType(errors.TypeInvalidRequest),
-					fmt.Errorf(""),
-					errors.New("").WithType(errors.TypeAlreadyExists), // The last one that should be chosen.
-				).WithType(errors.TypeNotFound)
-			},
-			wantErr:     true,
-			wantMessage: "",
-			wantType:    errors.TypeNotFound,
-		},
-		{
-			name: "all features at once with multilevel append",
-			makeErr: func() error {
-				return errors.Append(
-					errors.New("invalid attribute 1"),
-					errors.New("invalid attribute 2").WithType(errors.TypeFailedPrecondition),
-					errors.Append(
-						errors.New("attribute 3 is too big"),
-						errors.New("attribute 3 has invalid format"),
-					),
-					errors.New("missing attribute 4"),
-				).WithType(errors.TypeInvalidRequest)
-			},
-			wantErr:     true,
-			wantMessage: "invalid attribute 1; invalid attribute 2; attribute 3 is too big; attribute 3 has invalid format; missing attribute 4",
-			wantType:    errors.TypeInvalidRequest,
-		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -198,7 +101,7 @@ func TestError(t *testing.T) {
 }
 
 func TestErrorValue(t *testing.T) {
-	type valueKey struct{}
+	key := "testkey"
 	value := "test value"
 
 	tests := []struct {
@@ -223,7 +126,7 @@ func TestErrorValue(t *testing.T) {
 		{
 			name: "simple with value",
 			makeErr: func() error {
-				return errors.New("test").WithValue(valueKey{}, value)
+				return errors.New("test").WithValue(key, value)
 			},
 			wantValue: true,
 		},
@@ -233,86 +136,7 @@ func TestErrorValue(t *testing.T) {
 				return errors.From(
 					fmt.Errorf(
 						"test: %w",
-						errors.New("test").WithValue(valueKey{}, value),
-					),
-				)
-			},
-			wantValue: true,
-		},
-		{
-			name: "nested with append, with value",
-			makeErr: func() error {
-				return errors.From(
-					fmt.Errorf(
-						"test: %w",
-						errors.Append(
-							fmt.Errorf("e1"),
-							fmt.Errorf(
-								"e2: %w",
-								errors.Append(
-									fmt.Errorf("ee1"),
-									fmt.Errorf(
-										"ee2: %w",
-										errors.New("ee3").WithValue(valueKey{}, value),
-									),
-								),
-							),
-						),
-					),
-				)
-			},
-			wantValue: true,
-		},
-		{
-			name: "nested with append, with value 2",
-			makeErr: func() error {
-				return errors.From(
-					fmt.Errorf(
-						"test: %w",
-						errors.Append(
-							fmt.Errorf("e1"),
-							fmt.Errorf(
-								"e2: %w",
-								errors.Append(
-									fmt.Errorf("ee1"),
-									fmt.Errorf(
-										"ee2: %w",
-										errors.New("ee3"),
-									),
-								),
-							),
-						).WithValue(valueKey{}, value),
-					),
-				)
-			},
-			wantValue: true,
-		},
-		{
-			name: "nested with append, with value 3",
-			makeErr: func() error {
-				return errors.From(
-					fmt.Errorf(
-						"test: %w",
-						errors.Append(
-							fmt.Errorf("e1"),
-							errors.Append(
-								fmt.Errorf("ee1"),
-								fmt.Errorf(
-									"ee2: %w",
-									errors.New("eee1"),
-								),
-							),
-							fmt.Errorf(
-								"e3: %w",
-								errors.Append(
-									fmt.Errorf("ee1"),
-									fmt.Errorf(
-										"ee2: %w",
-										errors.New("eee1"),
-									),
-								).WithValue(valueKey{}, value),
-							),
-						),
+						errors.New("test").WithValue(key, value),
 					),
 				)
 			},
@@ -325,7 +149,7 @@ func TestErrorValue(t *testing.T) {
 			err := tt.makeErr()
 			require.NotNil(t, err)
 
-			v := errors.Value(err, valueKey{})
+			v := errors.Value(err, key)
 			if !tt.wantValue {
 				assert.True(t, v == nil)
 				return
@@ -393,15 +217,6 @@ func TestIs(t *testing.T) {
 			},
 			want: os.ErrNotExist,
 		},
-		{
-			name: "append",
-			makeErr: func() error {
-				err := errors.Append(nil, errors.New("test"))
-				err = errors.Append(err, os.ErrNotExist)
-				return err
-			},
-			want: os.ErrNotExist,
-		},
 	}
 
 	for _, tt := range tests {
@@ -438,14 +253,6 @@ func TestAs(t *testing.T) {
 			name: "from with context 2",
 			makeErr: func() error {
 				return errors.From(fmt.Errorf("test: %w", errors.From(&testError{Value: "test"})))
-			},
-		},
-		{
-			name: "append",
-			makeErr: func() error {
-				err := errors.Append(nil, errors.New("test"))
-				err = errors.Append(err, &testError{Value: "test"})
-				return err
 			},
 		},
 	}

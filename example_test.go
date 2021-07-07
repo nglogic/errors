@@ -19,11 +19,11 @@ func ExampleFrom() {
 // This example demonstrates the usage of passing extra data in errors.
 // In this case we want to log error, but we want to use other message to display to the user.
 func ExampleError_withValue() {
-	type errPublicMessageKey struct{}
+	key := "testkey"
 
 	f := func() error {
 		return errors.New("io failure").
-			WithValue(errPublicMessageKey{}, "There was a problem with filesystem, please try again later.")
+			WithValue(key, "There was a problem with filesystem, please try again later.")
 	}
 
 	err := f()
@@ -32,7 +32,7 @@ func ExampleError_withValue() {
 		log.Printf("f failed: %v", err)
 
 		// Hide real problem from user, display them a nice message.
-		msg := errors.Value(err, errPublicMessageKey{})
+		msg := errors.Value(err, key)
 		if msg != nil {
 			fmt.Println(msg.(string))
 		} else {
@@ -40,31 +40,6 @@ func ExampleError_withValue() {
 		}
 	}
 	// Output: There was a problem with filesystem, please try again later.
-}
-
-// This example demonstrates the usage of Append function.
-func ExampleAppend() {
-	var err error
-
-	if check1 := false; !check1 {
-		err = errors.Append(err, errors.New("check 1 failed"))
-	}
-	if check2 := false; !check2 {
-		err = errors.Append(err, errors.New("check 2 failed"))
-	}
-	if check3 := false; !check3 {
-		err = errors.Append(err, errors.New("check 3 failed"))
-	}
-	if err != nil {
-		err = errors.From(err).WithType(errors.TypeInvalidRequest)
-	}
-
-	fmt.Printf(
-		"error: '%v', is invalid request: %t",
-		err,
-		errors.IsType(err, errors.TypeInvalidRequest),
-	)
-	// Output: error: 'check 1 failed; check 2 failed; check 3 failed', is invalid request: true
 }
 
 // This example demonstrates how to simplify error handling in
